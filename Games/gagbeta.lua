@@ -15,7 +15,7 @@ local isRussian = localeId == "ru-ru"
 
 local englishText = {
     keyWindowTitle = "EgasedHub: Enter Key",
-    keyWindowNote = "Enter your key to access EgasedHub.\n\nNo key? Join our Discord to get one!",
+    keyWindowNote = "Enter your key to access EgasedHub.\nNo key? Join our Discord!",
     keyInvalid = "Invalid key or HWID mismatch.",
     keyError = "Failed to verify key. Try again later.",
     discordButtonTitle = "Copy Discord Link",
@@ -59,7 +59,7 @@ local englishText = {
 
 local russianText = {
     keyWindowTitle = "EgasedHub: Введите ключ",
-    keyWindowNote = "Введите ключ для доступа к EgasedHub.\n\nНет ключа? Присоединяйтесь к Discord, чтобы получить!",
+    keyWindowNote = "Введите ключ для доступа к EgasedHub.\nНет ключа? Присоединяйтесь к Discord!",
     keyInvalid = "Неверный ключ или несоответствие HWID.",
     keyError = "Не удалось проверить ключ. Попробуйте позже.",
     discordButtonTitle = "Скопировать ссылку на Discord",
@@ -155,15 +155,18 @@ local KeyWindow = WindUI:CreateWindow({
     Title = text.keyWindowTitle,
     Icon = "key",
     Author = "Egased",
-    Folder = "EgasedHub",
-    Size = UDim2.fromOffset(400, 300),
+    Size = UDim2.fromOffset(300, 200),
     Transparent = true,
     Theme = "Plant",
-    UserEnabled = true,
+    UserEnabled = false,
     SideBarWidth = 0,
     HasOutline = true
 })
 
+-- Ждём инициализации окна
+task.wait(0.1)
+
+-- Создаём вкладку
 local KeyTab = KeyWindow:Tab({ Title = "Key", Icon = "lock" })
 
 KeyTab:Paragraph({
