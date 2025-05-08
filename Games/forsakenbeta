@@ -1,0 +1,1190 @@
+local success, WindUI = pcall(function()
+    return loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+end)
+
+if not success or not WindUI then
+    warn("Failed to load WindUI library: ", WindUI)
+    return
+end
+
+local player = game.Players.LocalPlayer
+if not player then
+    warn("LocalPlayer not found!")
+    return
+end
+
+local UserInputService = game:GetService("UserInputService")
+
+-- Список эмоций
+local emoteOptions = {
+    "AICatDance", "AintNoLovinMyMan", "AolGuy", "AshleyLookAtMe", "BagUp", "Brickbattler",
+    "CCShimmy", "CaliforniaGirls", "Caramell", "DistractionDance", "Drumsticks", "Eggrolled",
+    "GangnamStyle", "Griddy", "HakariDance", "Headbanger", "Hero", "HeyNow", "Hotdog",
+    "Insanity", "JumpingForJoy", "Jumpstyle", "KazotskyKick", "Khaled", "Konton",
+    "LethalCompany", "Locked", "MonsterMash", "OppaGangnam", "PYT", "Poisoned",
+    "PopDance", "Prince", "Schadenfreude", "Silly", "Skeleton", "SoRetro",
+    "StockDance", "SubjectThree", "Sukuna", "TwoTwoTwo", "Wait", "Wave",
+    "_MissTheQuiet", "_SillyBilly", "_Subterfuge"
+}
+
+local Window = WindUI:CreateWindow({
+    Title = "EgasedHub:R [Forsaken]",
+    Icon = "knife",
+    Author = "Egased",
+    Folder = "EgasedHub",
+    Size = UDim2.fromOffset(600, 400),
+    Transparent = true,
+    Theme = "Dark",
+    UserEnabled = false,
+    SideBarWidth = 200,
+    HasOutline = true,
+})
+
+local Tabs = {
+    Home = Window:Tab({ Title = "Home", Icon = "home" }),
+    ESP = Window:Tab({ Title = "ESP", Icon = "eye" }),
+    Generators = Window:Tab({ Title = "Generators", Icon = "zap" }),
+    Player = Window:Tab({ Title = "Player", Icon = "user" }),
+    Emotes = Window:Tab({ Title = "Emotes", Icon = "smile" }),
+    Aimbot = Window:Tab({ Title = "Aimbot", Icon = "crosshair" }),
+}
+
+-- Home Tab
+local DiscordLink = "https://discord.gg/cRbced9G"
+Tabs.Home:Button({
+    Title = "Copy Discord Link",
+    Callback = function()
+        setclipboard(DiscordLink)
+        WindUI:Notify({
+            Title = "Discord Link Copied",
+            Content = "The Discord link has been copied to your clipboard.",
+            Duration = 5,
+        })
+    end
+})
+
+local themeValues = {}
+for name, _ in pairs(WindUI:GetThemes()) do
+    table.insert(themeValues, name)
+end
+
+Tabs.Home:Dropdown({
+    Title = "Select Theme",
+    Values = themeValues,
+    Value = WindUI:GetCurrentTheme(),
+    Callback = function(theme)
+        WindUI:SetTheme(theme)
+    end
+})
+
+Tabs.Home:Paragraph({
+    Desc = "Player: " .. player.Name .. "\nGame: " .. game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name,
+})
+
+-- ESP Tab
+local PlayersFolder = workspace:WaitForChild("Players", 10)
+local KillersFolder = PlayersFolder and PlayersFolder:WaitForChild("Killers", 5)
+local SurvivorsFolder = PlayersFolder and PlayersFolder:WaitForChild("Survivors", 5)
+
+if KillersFolder then
+    print("Killers folder found: ", KillersFolder:GetFullName())
+else
+    warn("Killers folder not found!")
+end
+if SurvivorsFolder then
+    print("Survivors folder found: ", SurvivorsFolder:GetFullName())
+else
+    warn("Survivors folder not found!")
+end
+
+local ESPPlayersEnabled = false
+Tabs.ESP:Toggle({
+    Title = "ESP Players",
+    Value = false,
+    Callback = function(state)
+        ESPPlayersEnabled = state
+        print("ESP Players toggled: ", state)
+        if state then
+            updateESPPlayers()
+        else
+            for _, p in pairs(game.Players:GetPlayers()) do
+                local char = p.Character
+                if char then
+                    for _, highlight in pairs(char:GetChildren()) do
+                        if highlight:IsA("Highlight") and highlight.Name == "ESPHighlight" then
+                            highlight:Destroy()
+                        end
+                    end
+                end
+            end
+        end
+    end
+})
+
+local function isKillerCharacter(character)
+    if not KillersFolder or not character then
+        return false
+    end
+    for _, killerModel in pairs(KillersFolder:GetChildren()) do
+        if killerModel == character then
+            return true
+        end
+    end
+    return false
+end
+
+local function updateESPPlayers()
+    if not ESPPlayersEnabled then
+        print("ESP Players disabled")
+        return
+    end
+    if not KillersFolder then
+        warn("ESP Players: Killers folder not found")
+        return
+    end
+    print("Updating ESP Players")
+    for _, p in pairs(game.Players:GetPlayers()) do
+        local char = p.Character
+        if char then
+            local isKiller = isKillerCharacter(char)
+            print("Checking player: ", p.Name, "IsKiller: ", isKiller, "Character: ", char:GetFullName())
+            local highlight = char:FindFirstChild("ESPHighlight")
+            if isKiller then
+                if not highlight then
+                    highlight = Instance.new("Highlight")
+                    highlight.Name = "ESPHighlight"
+                    highlight.Parent = char
+                end
+                highlight.FillColor = Color3.fromRGB(255, 0, 0)
+                highlight.OutlineColor = Color3.fromRGB(255, 0, 0)
+                highlight.FillTransparency = 0.25
+            else
+                if not highlight then
+                    highlight = Instance.new("Highlight")
+                    highlight.Name = "ESPHighlight"
+                    highlight.Parent = char
+                end
+                highlight.FillColor = Color3.fromRGB(0, 0, 255)
+                highlight.OutlineColor = Color3.fromRGB(0, 0, 255)
+                highlight.FillTransparency = 0.75
+            end
+        else
+            print("No character for player: ", p.Name)
+        end
+    end
+end
+
+if KillersFolder then
+    KillersFolder.ChildAdded:Connect(function(child)
+        if ESPPlayersEnabled then
+            print("New killer model detected: ", child:GetFullName())
+            updateESPPlayers()
+        end
+    end)
+end
+
+game.Players.PlayerAdded:Connect(function(p)
+    if ESPPlayersEnabled then
+        p.CharacterAdded:Connect(function(char)
+            print("Character added for: ", p.Name, "Character: ", char:GetFullName())
+            updateESPPlayers()
+        end) -- Закрываем CharacterAdded:Connect
+    end -- Закрываем if
+end) -- Закрываем PlayerAdded:Connect
+
+spawn(function()
+    while true do
+        if ESPPlayersEnabled then
+            updateESPPlayers()
+        end
+        wait(1)
+    end
+end)
+
+local PlayersHealthEnabled = false
+Tabs.ESP:Toggle({
+    Title = "Players Health",
+    Value = false,
+    Callback = function(state)
+        PlayersHealthEnabled = state
+        print("Players Health toggled: ", state)
+        if state then
+            updatePlayersHealth()
+        else
+            for _, p in pairs(game.Players:GetPlayers()) do
+                local char = p.Character
+                if char and char:FindFirstChild("Head") then
+                    local billboard = char.Head:FindFirstChild("HealthBillboard")
+                    if billboard then
+                        billboard:Destroy()
+                    end
+                end
+            end
+        end
+    end
+})
+
+local function updatePlayersHealth()
+    if not PlayersHealthEnabled then return end
+    for _, p in pairs(game.Players:GetPlayers()) do
+        local char = p.Character
+        if char and char:FindFirstChild("Humanoid") and char:FindFirstChild("Head") then
+            local humanoid = char.Humanoid
+            local health = math.floor(humanoid.Health)
+            local maxHealth = humanoid.MaxHealth
+            local percentage = (health / maxHealth) * 100
+            local color
+            if percentage > 80 then
+                color = Color3.fromRGB(0, 255, 0)
+            elseif percentage > 50 then
+                color = Color3.fromRGB(255, 255, 0)
+            elseif percentage > 20 then
+                color = Color3.fromRGB(255, 165, 0)
+            else
+                color = Color3.fromRGB(255, 0, 0)
+            end
+            local billboard = char.Head:FindFirstChild("HealthBillboard")
+            if not billboard then
+                billboard = Instance.new("BillboardGui")
+                billboard.Name = "HealthBillboard"
+                billboard.Parent = char.Head
+                billboard.Adornee = char.Head
+                billboard.Size = UDim2.new(0, 100, 0, 50)
+                billboard.StudsOffset = Vector3.new(0, 3, 0)
+                billboard.MaxDistance = 100
+                local textLabel = Instance.new("TextLabel")
+                textLabel.Parent = billboard
+                textLabel.Size = UDim2.new(1, 0, 1, 0)
+                textLabel.BackgroundTransparency = 1
+                textLabel.TextScaled = true
+                textLabel.TextStrokeTransparency = 0.5
+                textLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+            end
+            local textLabel = billboard:FindFirstChild("TextLabel")
+            if textLabel then
+                textLabel.Text = string.format("%d/%d", health, maxHealth)
+                textLabel.TextColor3 = color
+            end
+        end
+    end
+end
+
+game.Players.PlayerAdded:Connect(function(p)
+    if PlayersHealthEnabled then
+        p.CharacterAdded:Connect(updatePlayersHealth)
+    end
+end)
+
+spawn(function()
+    while true do
+        if PlayersHealthEnabled then
+            updatePlayersHealth()
+        end
+        wait(0.5)
+    end
+end)
+
+local ESPGeneratorsEnabled = false
+Tabs.ESP:Toggle({
+    Title = "ESP Generators",
+    Value = false,
+    Callback = function(state)
+        ESPGeneratorsEnabled = state
+        print("ESP Generators toggled: ", state)
+        if state then
+            updateESPGenerators()
+        else
+            local mapFolder = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("Ingame") and workspace.Map.Ingame:FindFirstChild("Map")
+            if mapFolder then
+                for _, gen in pairs(mapFolder:GetChildren()) do
+                    if gen:IsA("Model") and gen.Name == "Generator" then
+                        local highlight = gen:FindFirstChild("ESPHighlight")
+                        if highlight then
+                            highlight:Destroy()
+                        end
+                    end
+                end
+            end
+        end
+    end
+})
+
+local function updateESPGenerators()
+    if not ESPGeneratorsEnabled then
+        print("ESP Generators disabled")
+        return
+    end
+    local mapFolder = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("Ingame") and workspace.Map.Ingame:FindFirstChild("Map")
+    if not mapFolder then
+        print("Map folder not found, retrying in 3 seconds")
+        return
+    end
+    print("Updating ESP Generators")
+    local generatorCount = 0
+    for _, gen in pairs(mapFolder:GetChildren()) do
+        if gen:IsA("Model") and gen.Name == "Generator" then
+            generatorCount = generatorCount + 1
+            local progress = gen:FindFirstChild("Progress")
+            local progressValue = progress and progress:IsA("NumberValue") and progress.Value or 0
+            print("Found generator: ", gen:GetFullName(), "Progress: ", progressValue)
+            if progressValue >= 100 then
+                local highlight = gen:FindFirstChild("ESPHighlight")
+                if highlight then
+                    highlight:Destroy()
+                end
+            else
+                local highlight = gen:FindFirstChild("ESPHighlight")
+                if not highlight then
+                    highlight = Instance.new("Highlight")
+                    highlight.Name = "ESPHighlight"
+                    highlight.Parent = gen
+                end
+                highlight.FillColor = Color3.fromRGB(255, 165, 0)
+                highlight.OutlineColor = Color3.fromRGB(255, 190, 50)
+                highlight.FillTransparency = 0.6
+                highlight.OutlineTransparency = 0
+            end
+        end
+    end
+    print("Total generators found: ", generatorCount)
+end
+
+spawn(function()
+    while true do
+        if ESPGeneratorsEnabled then
+            updateESPGenerators()
+        end
+        wait(3)
+    end
+end)
+
+local ESPToolsEnabled = false
+Tabs.ESP:Toggle({
+    Title = "ESP Tools",
+    Value = false,
+    Callback = function(state)
+        ESPToolsEnabled = state
+        print("ESP Tools toggled: ", state)
+        if state then
+            updateESPTools()
+        else
+            local ingameFolder = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("Ingame")
+            if ingameFolder then
+                for _, tool in pairs(ingameFolder:GetDescendants()) do
+                    if tool:IsA("Tool") then
+                        local highlight = tool:FindFirstChild("ESPHighlight")
+                        if highlight then
+                            highlight:Destroy()
+                        end
+                    end
+                end
+            end
+        end
+    end
+})
+
+local function updateESPTools()
+    if not ESPToolsEnabled then
+        print("ESP Tools disabled")
+        return
+    end
+    local ingameFolder = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("Ingame")
+    if not ingameFolder then
+        warn("ESP Tools: Ingame folder not found")
+        return
+    end
+    for _, tool in pairs(ingameFolder:GetDescendants()) do
+        if tool:IsA("Tool") then
+            local highlight = tool:FindFirstChild("ESPHighlight")
+            if not highlight then
+                highlight = Instance.new("Highlight")
+                highlight.Name = "ESPHighlight"
+                highlight.Parent = tool
+                highlight.FillColor = Color3.fromRGB(0, 255, 0)
+                highlight.OutlineColor = Color3.fromRGB(0, 255, 0)
+                highlight.FillTransparency = 0
+            end
+        end
+    end
+end
+
+if workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("Ingame") then
+    workspace.Map.Ingame.DescendantAdded:Connect(function(descendant)
+        if ESPToolsEnabled and descendant:IsA("Tool") then
+            updateESPTools()
+        end
+    end)
+end
+
+spawn(function()
+    while true do
+        if ESPToolsEnabled then
+            updateESPTools()
+        end
+        wait(3)
+    end
+end)
+
+local ESPClonesEnabled = false
+Tabs.ESP:Toggle({
+    Title = "ESP 1x4 clones",
+    Value = false,
+    Callback = function(state)
+        ESPClonesEnabled = state
+        print("ESP Clones toggled: ", state)
+        if state then
+            updateESPClones()
+        else
+            local ingameFolder = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("Ingame")
+            if ingameFolder then
+                for _, clone in pairs(ingameFolder:GetChildren()) do
+                    if clone.Name == "1x1x1x1Zombie" then
+                        local highlight = clone:FindFirstChild("ESPHighlight")
+                        if highlight then
+                            highlight:Destroy()
+                        end
+                    end
+                end
+            end
+        end
+    end
+})
+
+local function updateESPClones()
+    if not ESPClonesEnabled then
+        print("ESP Clones disabled")
+        return
+    end
+    local ingameFolder = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("Ingame")
+    if not ingameFolder then
+        warn("ESP Clones: Ingame folder not found")
+        return
+    end
+    for _, clone in pairs(ingameFolder:GetChildren()) do
+        if clone.Name == "1x1x1x1Zombie" then
+            local highlight = clone:FindFirstChild("ESPHighlight")
+            if not highlight then
+                highlight = Instance.new("Highlight")
+                highlight.Name = "ESPHighlight"
+                highlight.Parent = clone
+                highlight.FillColor = Color3.fromRGB(255, 105, 180)
+                highlight.OutlineColor = Color3.fromRGB(255, 105, 180)
+                highlight.FillTransparency = 0
+            end
+        end
+    end
+end
+
+if workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("Ingame") then
+    workspace.Map.Ingame.ChildAdded:Connect(function(child)
+        if ESPClonesEnabled and child.Name == "1x1x1x1Zombie" then
+            updateESPClones()
+        end
+    end)
+end
+
+spawn(function()
+    while true do
+        if ESPClonesEnabled then
+            updateESPClones()
+        end
+        wait(1.5)
+    end
+end)
+
+-- Generators Tab
+local AutoGeneratorEnabled = false
+local AutoGeneratorCooldown = 2
+
+Tabs.Generators:Toggle({
+    Title = "Auto Generator",
+    Value = false,
+    Callback = function(state)
+        AutoGeneratorEnabled = state
+        print("Auto Generator toggled: ", state)
+    end
+})
+
+Tabs.Generators:Slider({
+    Title = "Cooldown",
+    Value = {
+        Min = 2,
+        Max = 10,
+        Default = 2,
+    },
+    Callback = function(value)
+        AutoGeneratorCooldown = value
+    end
+})
+
+local function doGenerator()
+    local playerChar = player.Character
+    if not playerChar then
+        warn("Player character not found!")
+        return
+    end
+    local rootPart = playerChar:FindFirstChild("HumanoidRootPart")
+    if not rootPart then
+        warn("Player HumanoidRootPart not found!")
+        return
+    end
+    local mapFolder = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("Ingame") and workspace.Map.Ingame:FindFirstChild("Map")
+    if not mapFolder then
+        print("Map folder not found for Auto Generator, retrying in 3 seconds")
+        return
+    end
+    print("Searching for generators")
+    local closestGen = nil
+    local shortestDist = math.huge
+    local generatorCount = 0
+    for _, obj in pairs(mapFolder:GetChildren()) do
+        if obj:IsA("Model") and obj.Name == "Generator" then
+            local progress = obj:FindFirstChild("Progress")
+            local progressValue = progress and progress:IsA("NumberValue") and progress.Value or 0
+            if progressValue < 100 then
+                generatorCount = generatorCount + 1
+                print("Found generator for Auto: ", obj:GetFullName(), "Progress: ", progressValue)
+                local primaryPart = obj.PrimaryPart or obj:FindFirstChild("PrimaryPart")
+                if primaryPart then
+                    local dist = (primaryPart.Position - rootPart.Position).Magnitude
+                    if dist < shortestDist then
+                        shortestDist = dist
+                        closestGen = obj
+                    end
+                end
+            end
+        end
+    end
+    print("Total generators found for Auto: ", generatorCount)
+    if closestGen then
+        print("Interacting with generator: ", closestGen:GetFullName())
+        local remotes = closestGen:FindFirstChild("Remotes")
+        if remotes then
+            local rf = remotes:FindFirstChild("RF")
+            local re = remotes:FindFirstChild("RE")
+            if rf and re then
+                print("Invoking remotes for generator")
+                rf:InvokeServer("enter")
+                re:FireServer()
+                task.wait(0.1)
+                rf:InvokeServer("leave")
+            else
+                warn("Generator remotes not found: RF=", rf, "RE=", re)
+            end
+        else
+            warn("Generator Remotes folder not found!")
+        end
+    else
+        print("No nearby generator found for Auto")
+    end
+end
+
+spawn(function()
+    while true do
+        if AutoGeneratorEnabled then
+            doGenerator()
+            wait(AutoGeneratorCooldown)
+        else
+            wait(1)
+        end
+    end
+end)
+
+local BringPizzaEnabled = false
+Tabs.Generators:Toggle({
+    Title = "Bring Pizza",
+    Value = false,
+    Callback = function(state)
+        BringPizzaEnabled = state
+        print("Bring Pizza toggled: ", state)
+    end
+})
+
+local function bringPizza()
+    if not BringPizzaEnabled then
+        print("Bring Pizza disabled")
+        return
+    end
+    local playerChar = player.Character
+    if not playerChar then
+        warn("Player character not found for Bring Pizza!")
+        return
+    end
+    local rootPart = playerChar:FindFirstChild("HumanoidRootPart")
+    if not rootPart then
+        warn("Player HumanoidRootPart not found for Bring Pizza!")
+        return
+    end
+    if isKillerCharacter(playerChar) then
+        print("Player is a killer, skipping Bring Pizza")
+        return
+    end
+    local ingameFolder = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("Ingame")
+    if not ingameFolder then
+        print("Ingame folder not found for Bring Pizza, retrying in 3 seconds")
+        return
+    end
+    local pizza = ingameFolder:FindFirstChild("Pizza")
+    if pizza and pizza:IsA("MeshPart") then
+        print("Found pizza: ", pizza:GetFullName())
+        print("Teleporting pizza to player")
+        pizza.CFrame = rootPart.CFrame + Vector3.new(0, 2, 0)
+    else
+        print("Pizza not found or not a MeshPart, retrying in 3 seconds")
+    end
+end
+
+spawn(function()
+    while true do
+        if BringPizzaEnabled then
+            bringPizza()
+        end
+        wait(3)
+    end
+end)
+
+-- Player Tab
+local FullbrightEnabled = false
+local originalLighting = {}
+local originalSky = game.Lighting:FindFirstChildOfClass("Sky")
+local originalEffects = {}
+
+local function saveOriginalLighting()
+    originalLighting.Ambient = game.Lighting.Ambient
+    originalLighting.Brightness = game.Lighting.Brightness
+    originalLighting.FogEnd = game.Lighting.FogEnd
+    for _, effect in pairs(game.Lighting:GetChildren()) do
+        if effect:IsA("BloomEffect") or effect:IsA("BlurEffect") or effect:IsA("ColorCorrectionEffect") or effect:IsA("SunRaysEffect") then
+            originalEffects[effect.Name] = effect.Enabled
+        end
+    end
+end
+
+local function applyFullbright()
+    game.Lighting.Ambient = Color3.fromRGB(255, 255, 255)
+    game.Lighting.Brightness = 1
+    game.Lighting.FogEnd = 1e10
+    for _, effect in pairs(game.Lighting:GetChildren()) do
+        if effect:IsA("BloomEffect") or effect:IsA("BlurEffect") or effect:IsA("ColorCorrectionEffect") or effect:IsA("SunRaysEffect") then
+            effect.Enabled = false
+        end
+    end
+    local sky = game.Lighting:FindFirstChildOfClass("Sky")
+    if sky then
+        sky:Destroy()
+    end
+    local newSky = Instance.new("Sky")
+    newSky.Parent = game.Lighting
+end
+
+local function revertLighting()
+    game.Lighting.Ambient = originalLighting.Ambient or Color3.fromRGB(0, 0, 0)
+    game.Lighting.Brightness = originalLighting.Brightness or 1
+    game.Lighting.FogEnd = originalLighting.FogEnd or 10000
+    for _, effect in pairs(game.Lighting:GetChildren()) do
+        if effect:IsA("BloomEffect") or effect:IsA("BlurEffect") or effect:IsA("ColorCorrectionEffect") or effect:IsA("SunRaysEffect") then
+            effect.Enabled = originalEffects[effect.Name] or false
+        end
+    end
+    if originalSky then
+        local sky = game.Lighting:FindFirstChildOfClass("Sky")
+        if sky then sky:Destroy() end
+        originalSky:Clone().Parent = game.Lighting
+    end
+end
+
+saveOriginalLighting()
+
+Tabs.Player:Toggle({
+    Title = "Fullbright",
+    Value = false,
+    Callback = function(state)
+        FullbrightEnabled = state
+        if state then
+            applyFullbright()
+        else
+            revertLighting()
+        end
+    end
+})
+
+spawn(function()
+    while true do
+        if FullbrightEnabled then
+            applyFullbright()
+        end
+        wait(3)
+    end
+end)
+
+local SpeedUpEnabled = false
+local tpwalking = false
+
+Tabs.Player:Toggle({
+    Title = "Speed up player [WORK ON ANY DEVICE]",
+    Value = false,
+    Callback = function(state)
+        SpeedUpEnabled = state
+        tpwalking = state
+    end
+})
+
+local RunService = game:GetService("RunService")
+local hb = RunService.Heartbeat
+
+spawn(function()
+    while true do
+        local delta = hb:Wait()
+        if tpwalking then
+            local chr = player.Character
+            local hum = chr and chr:FindFirstChildWhichIsA("Humanoid")
+            if hum and hum.MoveDirection.Magnitude > 0 then
+                chr:TranslateBy(hum.MoveDirection * 1.3 * delta * 10)
+            end
+        end
+    end
+end)
+
+-- Emotes Tab
+local emoteSlots = {}
+local success, emotesValue = pcall(function()
+    return player.PlayerData.Equipped.Emotes.Value
+end)
+if success and emotesValue then
+    emoteSlots = string.split(emotesValue or "nil|nil|nil|nil|nil|nil|nil|nil", "|")
+else
+    warn("Failed to load PlayerData.Equipped.Emotes!")
+    emoteSlots = { "nil", "nil", "nil", "nil", "nil", "nil", "nil", "nil" }
+end
+
+for i = 1, 8 do
+    Tabs.Emotes:Dropdown({
+        Title = "Emote Slot " .. i,
+        Values = emoteOptions,
+        Value = emoteSlots[i] ~= "nil" and emoteSlots[i] or nil,
+        AllowNone = true,
+        Callback = function(value)
+            emoteSlots[i] = value or "nil"
+            pcall(function()
+                player.PlayerData.Equipped.Emotes.Value = table.concat(emoteSlots, "|")
+            end)
+        end
+    })
+end
+
+local animSetA = {
+    idle = "rbxassetid://135419935358802",
+    walk = "rbxassetid://108287960442206"
+}
+
+local animSetB = {
+    idle = "rbxassetid://74530436512522",
+    walk = "rbxassetid://109671225388655"
+}
+
+local walkTrack, idleTrack, runningConnection
+local defaultWalkSpeed = 16
+local animSetAApplied = false
+local animSetBApplied = false
+
+local function applyAnimations(character, set)
+    local humanoid = character:WaitForChild("Humanoid", 5)
+    if not humanoid then
+        warn("Humanoid not found for animations!")
+        return
+    end
+    humanoid.WalkSpeed = set and 24 or defaultWalkSpeed
+
+    if walkTrack then walkTrack:Stop() end
+    if idleTrack then idleTrack:Stop() end
+    if runningConnection then runningConnection:Disconnect() end
+
+    if set then
+        local walkAnim = Instance.new("Animation")
+        walkAnim.AnimationId = set.walk
+        walkTrack = humanoid:LoadAnimation(walkAnim)
+
+        local idleAnim = Instance.new("Animation")
+        idleAnim.AnimationId = set.idle
+        idleTrack = humanoid:LoadAnimation(idleAnim)
+
+        runningConnection = humanoid.Running:Connect(function(speed)
+            if speed > 0 then
+                idleTrack:Stop()
+                if not walkTrack.IsPlaying then walkTrack:Play() end
+            else
+                walkTrack:Stop()
+                if not idleTrack.IsPlaying then idleTrack:Play() end
+            end
+        end)
+    end
+end
+
+Tabs.Emotes:Toggle({
+    Title = "First The Stalker Animation Pack",
+    Value = false,
+    Callback = function(state)
+        animSetAApplied = state
+        if state and animSetBApplied then
+            animSetBApplied = false
+            Tabs.Emotes:FindFirstChild("Second Animation Pack"):SetValue(false)
+        end
+        if player.Character then
+            applyAnimations(player.Character, state and animSetA or nil)
+        end
+    end
+})
+
+Tabs.Emotes:Toggle({
+    Title = "Second The stalker Animation Pack",
+    Value = false,
+    Callback = function(state)
+        animSetBApplied = state
+        if state and animSetAApplied then
+            animSetAApplied = false
+            Tabs.Emotes:FindFirstChild("First Animation Pack"):SetValue(false)
+        end
+        if player.Character then
+            applyAnimations(player.Character, state and animSetB or nil)
+        end
+    end
+})
+
+player.CharacterAdded:Connect(function(character)
+    if animSetAApplied then
+        applyAnimations(character, animSetA)
+    elseif animSetBApplied then
+        applyAnimations(character, animSetB)
+    end
+end)
+
+-- Backflip and Frontflip
+-- Backflip, Frontflip, and Airjump
+local BackflipEnabled = false
+local FrontflipEnabled = false
+local AirjumpEnabled = false
+local BackflipButtonEnabled = false
+local FrontflipButtonEnabled = false
+local AirjumpButtonEnabled = false
+
+local h = 0.0174533 -- Radians per degree for rotation
+
+local function performFrontflip()
+    local character = player.Character
+    if not character then
+        warn("No character for frontflip!")
+        return
+    end
+    local humanoid = character:FindFirstChild("Humanoid")
+    local rootPart = character:FindFirstChild("HumanoidRootPart")
+    if not humanoid or not rootPart then
+        warn("No humanoid or root part for frontflip!")
+        return
+    end
+    print("Performing frontflip")
+    humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+    wait()
+    humanoid.Sit = true
+    for i = 1, 360 do 
+        delay(i/720, function()
+            humanoid.Sit = true
+            rootPart.CFrame = rootPart.CFrame * CFrame.Angles(-h, 0, 0)
+        end)
+    end
+    wait(0.55)
+    humanoid.Sit = false
+end
+
+local function performBackflip()
+    local character = player.Character
+    if not character then
+        warn("No character for backflip!")
+        return
+    end
+    local humanoid = character:FindFirstChild("Humanoid")
+    local rootPart = character:FindFirstChild("HumanoidRootPart")
+    if not humanoid or not rootPart then
+        warn("No humanoid or root part for backflip!")
+        return
+    end
+    print("Performing backflip")
+    humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+    wait()
+    humanoid.Sit = true
+    for i = 1, 360 do
+        delay(i/720, function()
+            humanoid.Sit = true
+            rootPart.CFrame = rootPart.CFrame * CFrame.Angles(h, 0, 0)
+        end)
+    end
+    wait(0.55)
+    humanoid.Sit = false
+end
+
+local function performAirjump()
+    local character = player.Character
+    if not character then
+        warn("No character for airjump!")
+        return
+    end
+    local humanoid = character:FindFirstChild("Humanoid")
+    local rootPart = character:FindFirstChild("HumanoidRootPart")
+    if not humanoid or not rootPart then
+        warn("No humanoid or root part for airjump!")
+        return
+    end
+    print("Performing airjump")
+    local bodyVelocity = Instance.new("BodyVelocity")
+    bodyVelocity.MaxForce = Vector3.new(0, math.huge, 0)
+    bodyVelocity.Velocity = Vector3.new(0, 40, 0)
+    bodyVelocity.Parent = rootPart
+    task.wait(0.1)
+    bodyVelocity:Destroy()
+end
+
+Tabs.Emotes:Toggle({
+    Title = "Enable Backflip [X]",
+    Value = false,
+    Callback = function(state)
+        BackflipEnabled = state
+        print("Backflip [X] toggled: ", state)
+    end
+})
+
+Tabs.Emotes:Toggle({
+    Title = "Enable Frontflip [Z]",
+    Value = false,
+    Callback = function(state)
+        FrontflipEnabled = state
+        print("Frontflip [Z] toggled: ", state)
+    end
+})
+
+Tabs.Emotes:Toggle({
+    Title = "Enable Airjump [B]",
+    Value = false,
+    Callback = function(state)
+        AirjumpEnabled = state
+        print("Airjump [B] toggled: ", state)
+    end
+})
+
+-- Create draggable buttons
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "FlipButtons"
+screenGui.Parent = player.PlayerGui
+screenGui.ResetOnSpawn = false
+
+local function createDraggableButton(name, text, callback)
+    local button = Instance.new("TextButton")
+    button.Name = name
+    button.Size = UDim2.new(0, 100, 0, 40)
+    button.Position = UDim2.new(0.1, 0, 0.1, 0)
+    button.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    button.Text = text
+    button.TextColor3 = Color3.fromRGB(255, 255, 255)
+    button.TextScaled = true
+    button.Visible = false
+    button.Parent = screenGui
+
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 8)
+    corner.Parent = button
+
+    button.MouseButton1Click:Connect(function()
+        callback()
+    end)
+
+    local dragging, dragInput, dragStart, startPos
+    button.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = button.Position
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
+        end
+    end)
+
+    button.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            dragInput = input
+        end
+    end)
+
+    UserInputService.InputChanged:Connect(function(input)
+        if input == dragInput and dragging then
+            local delta = input.Position - dragStart
+            button.Position = UDim2.new(
+                startPos.X.Scale,
+                startPos.X.Offset + delta.X,
+                startPos.Y.Scale,
+                startPos.Y.Offset + delta.Y
+            )
+        end
+    end)
+
+    return button
+end
+
+local backflipButton = createDraggableButton("BackflipButton", "Backflip", function()
+    print("Backflip button clicked")
+    performBackflip()
+end)
+
+local frontflipButton = createDraggableButton("FrontflipButton", "Frontflip", function()
+    print("Frontflip button clicked")
+    performFrontflip()
+end)
+
+local airjumpButton = createDraggableButton("AirjumpButton", "Airjump", function()
+    print("Airjump button clicked")
+    performAirjump()
+end)
+
+Tabs.Emotes:Toggle({
+    Title = "Enable Backflip Button",
+    Value = false,
+    Callback = function(state)
+        BackflipButtonEnabled = state
+        backflipButton.Visible = state
+        print("Backflip Button toggled: ", state)
+    end
+})
+
+Tabs.Emotes:Toggle({
+    Title = "Enable Frontflip Button",
+    Value = false,
+    Callback = function(state)
+        FrontflipButtonEnabled = state
+        frontflipButton.Visible = state
+        print("Frontflip Button toggled: ", state)
+    end
+})
+
+Tabs.Emotes:Toggle({
+    Title = "Enable Airjump Button",
+    Value = false,
+    Callback = function(state)
+        AirjumpButtonEnabled = state
+        airjumpButton.Visible = state
+        print("Airjump Button toggled: ", state)
+    end
+})
+
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    if input.KeyCode == Enum.KeyCode.X and BackflipEnabled then
+        print("Backflip key pressed")
+        performBackflip()
+    elseif input.KeyCode == Enum.KeyCode.Z and FrontflipEnabled then
+        print("Frontflip key pressed")
+        performFrontflip()
+    elseif input.KeyCode == Enum.KeyCode.B and AirjumpEnabled then
+        print("Airjump key pressed")
+        performAirjump()
+    end
+end)
+
+-- Aimbot Tab
+local KillerAimbotEnabled = false
+local SpecialAimbotEnabled = false
+local camera = workspace.CurrentCamera
+
+local function isPlayerKiller()
+    if not KillersFolder or not player.Character then
+        return false
+    end
+    for _, killerModel in pairs(KillersFolder:GetChildren()) do
+        if killerModel == player.Character then
+            return true
+        end
+    end
+    return false
+end
+
+local function getNearestTarget()
+    if not camera then
+        warn("Camera not found for aimbot!")
+        return nil
+    end
+    local playerName = player.Name:lower()
+    local isKiller = isPlayerKiller()
+    local isSpecial = playerName == "chance" or playerName == "shedletsky" or playerName == "dusekkar"
+    print("Aimbot check - Player: ", player.Name, "IsKiller: ", isKiller, "IsSpecial: ", isSpecial)
+    
+    local targets = {}
+    if KillerAimbotEnabled and isKiller then
+        targets = SurvivorsFolder and SurvivorsFolder:GetChildren() or {}
+        print("Aimbot targeting survivors: ", #targets, "found")
+    elseif SpecialAimbotEnabled and isSpecial and SurvivorsFolder and SurvivorsFolder:FindFirstChild(player.Name) then
+        targets = KillersFolder and KillersFolder:GetChildren() or {}
+        print("Aimbot targeting killers: ", #targets, "found")
+    else
+        print("Aimbot inactive: Not killer or special")
+        return nil
+    end
+
+    local closestTarget = nil
+    local shortestDist = math.huge
+    local playerRoot = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+
+    if not playerRoot then
+        print("Player root not found")
+        return nil
+    end
+
+    for _, target in pairs(targets) do
+        if target:IsA("Model") and target ~= player.Character then
+            local targetRoot = target:FindFirstChild("HumanoidRootPart")
+            if targetRoot then
+                local dist = (targetRoot.Position - playerRoot.Position).Magnitude
+                if dist < shortestDist then
+                    shortestDist = dist
+                    closestTarget = target
+                end
+            end
+        end
+    end
+    if closestTarget then
+        print("Aimbot target found: ", closestTarget:GetFullName())
+    else
+        print("No aimbot target found")
+    end
+    return closestTarget
+end
+
+local function aimAtTarget()
+    local target = getNearestTarget()
+    if target and target:FindFirstChild("HumanoidRootPart") then
+        local targetPos = target.HumanoidRootPart.Position
+        camera.CFrame = CFrame.new(camera.CFrame.Position, targetPos)
+    end
+end
+
+Tabs.Aimbot:Toggle({
+    Title = "Killer Aimbot",
+    Value = false,
+    Callback = function(state)
+        KillerAimbotEnabled = state
+        print("Killer Aimbot toggled: ", state)
+    end
+})
+
+Tabs.Aimbot:Toggle({
+    Title = "Chance, Shedletsky, Dusekkar Aimbot",
+    Value = false,
+    Callback = function(state)
+        SpecialAimbotEnabled = state
+        print("Special Aimbot toggled: ", state)
+    end
+})
+
+RunService.RenderStepped:Connect(function()
+    if KillerAimbotEnabled or SpecialAimbotEnabled then
+        aimAtTarget()
+    end
+end)
