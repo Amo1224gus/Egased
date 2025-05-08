@@ -7,11 +7,11 @@ local gameScripts = {
         loadstringUrl = "https://raw.githubusercontent.com/Amo1224gus/Egased/refs/heads/main/Games/GrowAGarden",
         fallbackName = "Grow a Garden"
     },
-    -- Пример добавления других игр
-    -- ["123456789012345"] = {
-    --     loadstringUrl = "https://example.com/scripts/another-game.lua",
-    --     fallbackName = "Another Game"
-    -- },
+    Пример добавления других игр
+    ["18687417158"] = {
+         loadstringUrl = "https://raw.githubusercontent.com/Amo1224gus/Egased/refs/heads/main/Games/forsakenk",
+         fallbackName = "Forsaken"
+     },
 }
 
 -- Функция для получения названия игры по ID через Roblox API
