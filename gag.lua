@@ -8,7 +8,7 @@ local gameScripts = {
         loadstringUrl = "https://raw.githubusercontent.com/Amo1224gus/Egased/refs/heads/main/Games/GrowAGarden",
         fallbackName = "Grow a Garden"
     },
-    Пример добавления других игр
+    
     ["18687417158"] = {
          loadstringUrl = "https://raw.githubusercontent.com/Amo1224gus/Egased/refs/heads/main/Games/forsakenk",
          fallbackName = "Forsaken"
