@@ -1,0 +1,104 @@
+
+local success, WindUI = pcall(function()
+    return loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+end)
+
+-- Custom Key System
+local function initKeySystem()
+    local screenGui = Instance.new("ScreenGui")
+    screenGui.Name = "KeyWindow"
+    screenGui.Parent = game.Players.LocalPlayer.PlayerGui
+    screenGui.ResetOnSpawn = false
+
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(0, 300, 0, 400)
+    frame.Position = UDim2.new(0.5, -150, 0.5, -200)
+    frame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    frame.Parent = screenGui
+
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 12)
+    corner.Parent = frame
+
+    local title = Instance.new("TextLabel")
+    title.Size = UDim2.new(1, -20, 0, 50)
+    title.Position = UDim2.new(0, 10, 0, 20)
+    title.BackgroundTransparency = 1
+    title.Text = "Obtain and enter the key below"
+    title.TextColor3 = Color3.fromRGB(255, 255, 255)
+    title.TextSize = 24
+    title.Font = Enum.Font.Ubuntu
+    title.TextWrapped = true
+    title.Parent = frame
+
+    local textBox = Instance.new("TextBox")
+    textBox.Size = UDim2.new(1, -40, 0, 40)
+    textBox.Position = UDim2.new(0, 20, 0, 300)
+    textBox.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    textBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+    textBox.TextSize = 18
+    textBox.Font = Enum.Font.Ubuntu
+    textBox.PlaceholderText = "Enter key here"
+    textBox.Text = ""
+    textBox.Parent = frame
+
+    local textBoxCorner = Instance.new("UICorner")
+    textBoxCorner.CornerRadius = UDim.new(0, 8)
+    textBoxCorner.Parent = textBox
+
+    local discordButton = Instance.new("TextButton")
+    discordButton.Size = UDim2.new(1, -40, 0, 40)
+    discordButton.Position = UDim2.new(0, 20, 0, 350)
+    discordButton.BackgroundColor3 = Color3.fromRGB(0, 120, 255)
+    discordButton.Text = "Get Discord"
+    discordButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    discordButton.TextSize = 18
+    discordButton.Font = Enum.Font.Ubuntu
+    discordButton.Parent = frame
+
+    local buttonCorner = Instance.new("UICorner")
+    buttonCorner.CornerRadius = UDim.new(0, 8)
+    buttonCorner.Parent = discordButton
+
+    discordButton.MouseButton1Click:Connect(function()
+        setclipboard("https://discord.gg/cRbced9G")
+        WindUI:Notify({
+            Title = "Discord Link Copied",
+            Content = "The Discord link has been copied to your clipboard.",
+            Duration = 5,
+        })
+    end)
+
+    local validKey = "iwannabefunnyguylol"
+
+    local function checkKey()
+        if textBox.Text == validKey then
+            print("Key validated, creating WindUI window")
+            screenGui:Destroy()
+            -- INSERT YOUR ENTIRE CODE HERE --
+            -- Paste your entire existing script code (everything after WindUI loading) below this line
+            -- Example: local Window = WindUI:CreateWindow({...}) and all your Tabs, buttons, functions
+        else
+            WindUI:Notify({
+                Title = "Invalid Key",
+                Content = "Please enter a valid key.",
+                Duration = 5,
+            })
+        end
+    end
+
+    textBox.FocusLost:Connect(function(enterPressed)
+        if enterPressed then
+            checkKey()
+        end
+    end)
+end
+
+-- Run Key System
+if game.Players.LocalPlayer then
+    initKeySystem()
+else
+    game.Players.PlayerAdded:Connect(function()
+        initKeySystem()
+    end)
+end
