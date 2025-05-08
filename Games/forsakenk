@@ -75,9 +75,7 @@ local function initKeySystem()
         if textBox.Text == validKey then
             print("Key validated, creating WindUI window")
             screenGui:Destroy()
-            -- INSERT YOUR ENTIRE CODE HERE --
-            -- Paste your entire existing script code (everything after WindUI loading) below this line
-            -- Example: local Window = WindUI:CreateWindow({...}) and all your Tabs, buttons, functions
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/Amo1224gus/Egased/refs/heads/main/Games/forsakenbeta"))()
         else
             WindUI:Notify({
                 Title = "Invalid Key",
