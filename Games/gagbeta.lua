@@ -1,4 +1,3 @@
-
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 local TweenService = game:GetService("TweenService")
 
@@ -191,6 +190,7 @@ else
     local autoSeedPlantsEnabled = false
     local autoBuySeedsEnabled = false
     local autoSpendSeedPackEnabled = false
+    local autoBuyEggsEnabled = false
     local isBusy = false
 
     AutoFarmTab:Toggle({
@@ -208,53 +208,17 @@ else
                                 for _, prompt in ipairs(farm:GetDescendants()) do
                                     if not collectPlantsEnabled then break end
                                     if prompt:IsA("ProximityPrompt") and not processedPrompts[prompt] then
-                                        local playerRoot = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
-                                        if playerRoot then
-                                            local dist = (playerRoot.Position - prompt.Parent.Position).Magnitude
-                                            if dist <= 20 then
-                                                prompt.Exclusivity = Enum.ProximityPromptExclusivity.AlwaysShow
-                                                prompt.MaxActivationDistance = 100
-                                                prompt.RequiresLineOfSight = false
-                                                prompt.Enabled = true
-                                                fireproximityprompt(prompt, 1, true)
-                                                processedPrompts[prompt] = true
-                                            else
-                                                playerRoot.CFrame = prompt.Parent.CFrame
-                                            end
-                                            wait(0.2)
-                                        end
+                                        prompt.Exclusivity = Enum.ProximityPromptExclusivity.AlwaysShow
+                                        prompt.MaxActivationDistance = 10000
+                                        prompt.RequiresLineOfSight = false
+                                        prompt.Enabled = true
+                                        fireproximityprompt(prompt, 1, true)
+                                        processedPrompts[prompt] = true
+                                        wait(0.1)
                                     end
                                 end
                             end
                             wait(0.5)
-                        elseif autoSellingEnabled then
-                            local startTime = tick()
-                            while collectPlantsEnabled and autoSellingEnabled and tick() - startTime < 10 and not isBusy do
-                                local farm = ourFarm:FindFirstChild("Important"):FindFirstChild("Plants_Physical")
-                                if farm then
-                                    for _, prompt in ipairs(farm:GetDescendants()) do
-                                        if not collectPlantsEnabled then break end
-                                        if prompt:IsA("ProximityPrompt") and not processedPrompts[prompt] then
-                                            local playerRoot = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
-                                            if playerRoot then
-                                                local dist = (playerRoot.Position - prompt.Parent.Position).Magnitude
-                                                if dist <= 20 then
-                                                    prompt.Exclusivity = Enum.ProximityPromptExclusivity.AlwaysShow
-                                                    prompt.MaxActivationDistance = 100
-                                                    prompt.RequiresLineOfSight = false
-                                                    prompt.Enabled = true
-                                                    fireproximityprompt(prompt, 1, true)
-                                                    processedPrompts[prompt] = true
-                                                else
-                                                    playerRoot.CFrame = prompt.Parent.CFrame
-                                                end
-                                                wait(0.2)
-                                            end
-                                        end
-                                    end
-                                end
-                                wait(0.5)
-                            end
                         end
                         processedPrompts = {}
                     end
@@ -278,11 +242,12 @@ else
                             isBusy = true
                             local shopStand = workspace.NPCS:FindFirstChild("Sell Stands") and workspace.NPCS["Sell Stands"]:FindFirstChild("Shop Stand")
                             if shopStand then
+                                local currentCFrame = root.CFrame
                                 root.CFrame = shopStand.CFrame * CFrame.new(0, 0, 3)
                                 wait(0.1)
                                 ReplicatedStorage:WaitForChild("GameEvents"):WaitForChild("Sell_Inventory"):FireServer()
                                 wait(1)
-                                root.CFrame = CFrame.new(27.028656, 4.61500359, -81.4960098, 0.801240802, -3.3885601e-09, -0.598342061, -3.22234683e-10, 1, -6.09475403e-09, 0.598342061, 5.07617193e-09, 0.801240802)
+                                root.CFrame = currentCFrame
                             else
                                 warn("Shop Stand not found")
                             end
@@ -387,6 +352,25 @@ else
             end
         end
     })
+
+    AutoFarmTab:Toggle({
+        Title = "Auto Buy All Eggs",
+        Default = false,
+        Callback = function(state)
+            autoBuyEggsEnabled = state
+            if state then
+                spawn(function()
+                    while autoBuyEggsEnabled do
+                        for i = 1, 3 do
+                            local args = {i}
+                            game:GetService("ReplicatedStorage"):WaitForChild("GameEvents"):WaitForChild("BuyPetEgg"):FireServer(unpack(args))
+                        end
+                        wait(10)
+                    end
+                end)
+            end
+        end
+    })
 end
 
 FreeSeedsTab:Paragraph({
@@ -395,13 +379,44 @@ FreeSeedsTab:Paragraph({
     Color = "Red",
 })
 
+local function hasMoonlitItem()
+    for _, item in ipairs(backpack:GetChildren()) do
+        if item:IsA("Tool") and item.Name:find("Moonlit") then
+            return true
+        end
+    end
+    local character = player.Character
+    if character then
+        for _, item in ipairs(character:GetChildren()) do
+            if item:IsA("Tool") and item.Name:find("Moonlit") then
+                return true
+            end
+        end
+    end
+    return false
+end
 
-FreeSeedsTab:Paragraph({
-    Title = text.freeSeedsPatchTitle,
-    Image = "alert-triangle",
-    Color = "Red",
+local autoMoonlitQuestEnabled = false
+MiscTab:Toggle({
+    Title = "Auto Moonlit Quest",
+    Default = false,
+    Callback = function(state)
+        autoMoonlitQuestEnabled = state
+        if state then
+            spawn(function()
+                while autoMoonlitQuestEnabled do
+                    if hasMoonlitItem() then
+                        local args = {"SubmitAllPlants"}
+                        game:GetService("ReplicatedStorage"):WaitForChild("GameEvents"):WaitForChild("NightQuestRemoteEvent"):FireServer(unpack(args))
+                        wait(5)
+                    else
+                        wait(2)
+                    end
+                end
+            end)
+        end
+    end
 })
-
 
 MiscTab:Slider({
     Title = text.characterSpeedTitle,
@@ -541,15 +556,15 @@ GUITab:Toggle({
     end
 })
 
-local easterShopEnabled = false
+local nightQuestPrompt = workspace:WaitForChild("NightEvent"):WaitForChild("Prompt"):WaitForChild("Head"):WaitForChild("ProximityPrompt"):WaitForChild("NightQuestNPCDialogue")
 GUITab:Toggle({
     Title = text.easterShopTitle,
     Default = false,
     Callback = function(state)
-        easterShopEnabled = state
-        local easterShop = player.PlayerGui:FindFirstChild("Easter_Shop")
-        if easterShop then
-            easterShop.Enabled = state
+        if nightQuestPrompt then
+            nightQuestPrompt.Enabled = state
+        else
+            warn("NightQuestNPCDialogue prompt not found")
         end
     end
 })
