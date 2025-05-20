@@ -1,3 +1,4 @@
+print("ready")
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
