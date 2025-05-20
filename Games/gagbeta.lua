@@ -12,7 +12,7 @@ local localeId = player.LocaleId
 local isRussian = localeId == "ru-ru"
 
 local englishText = {
-    windowTitle = "Egas X! [0.16Rewr]",
+    windowTitle = "Egas X! [0.25Rewr]",
     windowNote = "Enter the key to access the script.\n\nNo key? Join our Discord: https://discord.gg/cRbced9G",
     homeTabTitle = "Home",
     autoFarmTabTitle = "Auto Farm",
@@ -53,7 +53,7 @@ local englishText = {
 }
 
 local russianText = {
-    windowTitle = "EgasedHub:R [Grow a Garden]",
+    windowTitle = "Egas X! [0.25Rewr]",
     windowNote = "Введите ключ для доступа к скрипту.\n\nНет ключа? Присоединяйтесь к Discord по кнопке.",
     homeTabTitle = "Главная",
     autoFarmTabTitle = "Автофарм",
@@ -61,7 +61,7 @@ local russianText = {
     miscTabTitle = "Разное",
     guiTabTitle = "Интерфейс",
     welcomeTitle = "Добро пожаловать в Egased Hub!",
-    welcomeDesc = "Этот скрипт помогает эффективно выращивать ваш сад.",
+    welcomeDesc = "Этот скрипт помогает эффективно выращивать ваш сад. хотя нет. не помогает.",
     discordButtonTitle = "Скопировать ссылку на Discord",
     discordNotifyTitle = "Ссылка на Discord скопирована",
     discordNotifyContent = "Ссылка на Discord скопирована в буфер обмена.",
@@ -107,10 +107,10 @@ local Window = WindUI:CreateWindow({
     SideBarWidth = 200,
     HasOutline = true,
     KeySystem = {
-        Key = { "idontknowhowtobefunnyanymore" },
+        Key = { "iwannamakegoodandfastscriptshelpme" },
         Note = text.windowNote,
-        URL = "https://discord.gg/cRbced9G",
-        SaveKey = true,
+        URL = "https://discord.gg/TzTeBkBSBB",
+        SaveKey = false,
     },
 })
 
@@ -562,16 +562,5 @@ GUITab:Toggle({
 })
 
 local nightQuestPrompt = workspace:WaitForChild("NightEvent"):WaitForChild("Prompt"):WaitForChild("Head"):WaitForChild("ProximityPrompt"):WaitForChild("NightQuestNPCDialogue")
-GUITab:Toggle({
-    Title = text.easterShopTitle,
-    Default = false,
-    Callback = function(state)
-        if nightQuestPrompt then
-            nightQuestPrompt.Enabled = state
-        else
-            warn("NightQuestNPCDialogue prompt not found")
-        end
-    end
-})
 
 Window:SelectTab(1)
