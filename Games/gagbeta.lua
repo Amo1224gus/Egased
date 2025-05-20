@@ -12,7 +12,7 @@ local localeId = player.LocaleId
 local isRussian = localeId == "ru-ru"
 
 local englishText = {
-    windowTitle = "Egas X! [0.22Rewr]",
+    windowTitle = "Egas X! [0.24Rewr]",
     windowNote = "Enter the key to access the script.\n\nNo key? Join our Discord: https://discord.gg/cRbced9G",
     homeTabTitle = "Home",
     autoFarmTabTitle = "Auto Farm",
@@ -107,7 +107,7 @@ local Window = WindUI:CreateWindow({
     SideBarWidth = 200,
     HasOutline = true,
     KeySystem = {
-        Key = { "idontknowhowtobefunnyanymore" },
+        Key = { "iwannamakegoodandfastscriptshelpme" },
         Note = text.windowNote,
         URL = "https://discord.gg/cRbced9G",
         SaveKey = true,
@@ -193,9 +193,6 @@ else
     local autoBuyEggsEnabled = false
     local isBusy = false
 
-    local collectButtonMethodEnabled = false
-    local VirtualInputManager = game:GetService("VirtualInputManager")
-    
     AutoFarmTab:Toggle({
         Title = "Plants Collect Aura",
         Default = false,
@@ -226,8 +223,6 @@ else
             end
         end
     })
-    
-     
 
     AutoFarmTab:Toggle({
         Title = text.autoSellTitle,
@@ -245,13 +240,10 @@ else
                             local shopStand = workspace.NPCS:FindFirstChild("Sell Stands") and workspace.NPCS["Sell Stands"]:FindFirstChild("Shop Stand")
                             if shopStand then
                                 local currentCFrame = root.CFrame
-                                -- Step 1: Teleport and wait 0.3 seconds
                                 root.CFrame = shopStand.CFrame * CFrame.new(0, 0, 3)
-                                wait(0.3)
-                                -- Step 2: Sell inventory and wait 0.6 seconds
+                                wait(0.1)
                                 ReplicatedStorage:WaitForChild("GameEvents"):WaitForChild("Sell_Inventory"):FireServer()
-                                wait(0.6)
-                                -- Step 3: Teleport back
+                                wait(1)
                                 root.CFrame = currentCFrame
                             else
                                 warn("Shop Stand not found")
