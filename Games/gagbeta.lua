@@ -1,5 +1,6 @@
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -12,7 +13,7 @@ local localeId = player.LocaleId
 local isRussian = localeId == "ru-ru"
 
 local englishText = {
-    windowTitle = "Egas X! [0.16Rewr]",
+    windowTitle = "Egas X! [0.09Rewr]",
     windowNote = "Enter the key to access the script.\n\nNo key? Join our Discord: https://discord.gg/cRbced9G",
     homeTabTitle = "Home",
     autoFarmTabTitle = "Auto Farm",
@@ -49,7 +50,10 @@ local englishText = {
     shopGUITitle = "Shop GUI",
     gearShopTitle = "Gear Shop",
     dailyQuestTitle = "Daily Quest",
-    easterShopTitle = "Easter Shop"
+    easterShopTitle = "Easter Shop",
+    autoBuyEggsTitle = "Auto Buy All Eggs",
+    autoMoonlitQuestTitle = "Auto Moonlit Quest",
+    noclipTitle = "Noclip"
 }
 
 local russianText = {
@@ -90,7 +94,10 @@ local russianText = {
     shopGUITitle = "Магазин семян",
     gearShopTitle = "Магазин снаряжения",
     dailyQuestTitle = "Ежедневные квесты",
-    easterShopTitle = "Пасхальный магазин"
+    easterShopTitle = "Пасхальный магазин",
+    autoBuyEggsTitle = "Автопокупка всех яиц",
+    autoMoonlitQuestTitle = "Автоматический квест Moonlit",
+    noclipTitle = "Ноклип"
 }
 
 local text = isRussian and russianText or englishText
@@ -126,6 +133,33 @@ local function findOurFarm()
         end
     end
     return nil
+end
+
+-- Noclip Functions
+local Noclip = nil
+local Clip = nil
+
+local function noclip()
+    Clip = false
+    local function Nocl()
+        if Clip == false and game.Players.LocalPlayer.Character ~= nil then
+            for _, v in pairs(game.Players.LocalPlayer.Character:GetDescendants()) do
+                if v:IsA('BasePart') and v.CanCollide then
+                    v.CanCollide = false
+                end
+            end
+        end
+        task.wait(0.21) -- basic optimization
+    end
+    Noclip = RunService.Stepped:Connect(Nocl)
+end
+
+local function clip()
+    if Noclip then
+        Noclip:Disconnect()
+        Noclip = nil
+    end
+    Clip = true
 end
 
 local HomeTab = Window:Tab({ Title = text.homeTabTitle, Icon = "home" })
@@ -191,7 +225,17 @@ else
     local autoBuySeedsEnabled = false
     local autoSpendSeedPackEnabled = false
     local autoBuyEggsEnabled = false
+    local autoMoonlitQuestEnabled = false
     local isBusy = false
+
+    -- Calculate a safe return position based on the farm
+    local function getFarmReturnPosition()
+        local farmBase = ourFarm:FindFirstChild("Base") or ourFarm:FindFirstChild("Important")
+        if farmBase then
+            return farmBase.CFrame * CFrame.new(0, 5, 0) -- Slightly above the farm base
+        end
+        return CFrame.new(27.028656, 4.61500359, -81.4960098) -- Fallback position
+    end
 
     AutoFarmTab:Toggle({
         Title = text.collectPlantsTitle,
@@ -208,17 +252,53 @@ else
                                 for _, prompt in ipairs(farm:GetDescendants()) do
                                     if not collectPlantsEnabled then break end
                                     if prompt:IsA("ProximityPrompt") and not processedPrompts[prompt] then
-                                        prompt.Exclusivity = Enum.ProximityPromptExclusivity.AlwaysShow
-                                        prompt.MaxActivationDistance = 10000
-                                        prompt.RequiresLineOfSight = false
-                                        prompt.Enabled = true
-                                        fireproximityprompt(prompt, 1, true)
-                                        processedPrompts[prompt] = true
-                                        wait(0.1)
+                                        local playerRoot = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+                                        if playerRoot then
+                                            local dist = (playerRoot.Position - prompt.Parent.Position).Magnitude
+                                            if dist <= 20 then
+                                                prompt.Exclusivity = Enum.ProximityPromptExclusivity.AlwaysShow
+                                                prompt.MaxActivationDistance = 100
+                                                prompt.RequiresLineOfSight = false
+                                                prompt.Enabled = true
+                                                fireproximityprompt(prompt, 1, true)
+                                                processedPrompts[prompt] = true
+                                            else
+                                                playerRoot.CFrame = prompt.Parent.CFrame
+                                            end
+                                            task.wait(0.2)
+                                        end
                                     end
                                 end
                             end
-                            wait(0.5)
+                            task.wait(0.5)
+                        elseif autoSellingEnabled then
+                            local startTime = tick()
+                            while collectPlantsEnabled and autoSellingEnabled and tick() - startTime < 10 and not isBusy do
+                                local farm = ourFarm:FindFirstChild("Important"):FindFirstChild("Plants_Physical")
+                                if farm then
+                                    for _, prompt in ipairs(farm:GetDescendants()) do
+                                        if not collectPlantsEnabled then break end
+                                        if prompt:IsA("ProximityPrompt") and not processedPrompts[prompt] then
+                                            local playerRoot = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+                                            if playerRoot then
+                                                local dist = (playerRoot.Position - prompt.Parent.Position).Magnitude
+                                                if dist <= 20 then
+                                                    prompt.Exclusivity = Enum.ProximityPromptExclusivity.AlwaysShow
+                                                    prompt.MaxActivationDistance = 100
+                                                    prompt.RequiresLineOfSight = false
+                                                    prompt.Enabled = true
+                                                    fireproximityprompt(prompt, 1, true)
+                                                    processedPrompts[prompt] = true
+                                                else
+                                                    playerRoot.CFrame = prompt.Parent.CFrame
+                                                end
+                                                task.wait(0.2)
+                                            end
+                                        end
+                                    end
+                                end
+                                task.wait(0.5)
+                            end
                         end
                         processedPrompts = {}
                     end
@@ -240,20 +320,25 @@ else
                         local inventory = backpack:GetChildren()
                         if #inventory >= 10 then
                             isBusy = true
+                            local originalPosition = getFarmReturnPosition()
                             local shopStand = workspace.NPCS:FindFirstChild("Sell Stands") and workspace.NPCS["Sell Stands"]:FindFirstChild("Shop Stand")
                             if shopStand then
-                                local currentCFrame = root.CFrame
-                                root.CFrame = shopStand.CFrame * CFrame.new(0, 0, 3)
-                                wait(0.1)
-                                ReplicatedStorage:WaitForChild("GameEvents"):WaitForChild("Sell_Inventory"):FireServer()
-                                wait(1)
-                                root.CFrame = currentCFrame
+                                root.CFrame = shopStand.CFrame * CFrame.new(0, 5, 3) -- Adjusted position
+                                task.wait(0.3) -- Wait for server to register position
+                                local success, err = pcall(function()
+                                    ReplicatedStorage:WaitForChild("GameEvents"):WaitForChild("Sell_Inventory"):FireServer()
+                                end)
+                                if not success then
+                                    warn("Failed to sell inventory: " .. tostring(err))
+                                end
+                                task.wait(0.6) -- Wait for sell to process
+                                root.CFrame = originalPosition
                             else
                                 warn("Shop Stand not found")
                             end
                             isBusy = false
                         end
-                        wait(10)
+                        task.wait(15) -- Changed to 15 seconds
                     end
                 end)
             end
@@ -295,7 +380,7 @@ else
                             end
                             remote:FireServer(pos, seedType)
                         end
-                        wait(0.1)
+                        task.wait(0.1)
                     end
                 end)
             end
@@ -316,7 +401,7 @@ else
                             local args = { seed }
                             ReplicatedStorage:WaitForChild("GameEvents"):WaitForChild("BuySeedStock"):FireServer(unpack(args))
                         end
-                        wait(5)
+                        task.wait(5)
                     end
                 end)
             end
@@ -336,7 +421,7 @@ else
                         if tool and tool.Name:lower():find("seed pack") then
                             for i = 1, 10 do
                                 tool:Activate()
-                                wait(0.1)
+                                task.wait(0.1)
                             end
                         end
                         local rollCrateUI = player.PlayerGui:FindFirstChild("RollCrate_UI")
@@ -346,7 +431,7 @@ else
                                 frame.Visible = false
                             end
                         end
-                        wait(0.1)
+                        task.wait(0.1)
                     end
                 end)
             end
@@ -354,7 +439,7 @@ else
     })
 
     AutoFarmTab:Toggle({
-        Title = "Auto Buy All Eggs",
+        Title = text.autoBuyEggsTitle,
         Default = false,
         Callback = function(state)
             autoBuyEggsEnabled = state
@@ -362,10 +447,37 @@ else
                 spawn(function()
                     while autoBuyEggsEnabled do
                         for i = 1, 3 do
-                            local args = {i}
-                            game:GetService("ReplicatedStorage"):WaitForChild("GameEvents"):WaitForChild("BuyPetEgg"):FireServer(unpack(args))
+                            local args = { i }
+                            ReplicatedStorage:WaitForChild("GameEvents"):WaitForChild("BuyPetEgg"):FireServer(unpack(args))
                         end
-                        wait(10)
+                        task.wait(10)
+                    end
+                end)
+            end
+        end
+    })
+
+    AutoFarmTab:Toggle({
+        Title = text.autoMoonlitQuestTitle,
+        Default = false,
+        Callback = function(state)
+            autoMoonlitQuestEnabled = state
+            if state then
+                spawn(function()
+                    while autoMoonlitQuestEnabled do
+                        local hasMoonlit = false
+                        for _, item in pairs(backpack:GetChildren()) do
+                            if item:IsA("Tool") and item.Name:find("Moonlit") then
+                                hasMoonlit = true
+                                break
+                            end
+                        end
+                        if hasMoonlit then
+                            local args = { "SubmitAllPlants" }
+                            ReplicatedStorage:WaitForChild("GameEvents"):WaitForChild("NightQuestRemoteEvent"):FireServer(unpack(args))
+                            task.wait(5)
+                        end
+                        task.wait(2)
                     end
                 end)
             end
@@ -377,45 +489,6 @@ FreeSeedsTab:Paragraph({
     Title = text.freeSeedsPatchTitle,
     Image = "alert-triangle",
     Color = "Red",
-})
-
-local function hasMoonlitItem()
-    for _, item in ipairs(backpack:GetChildren()) do
-        if item:IsA("Tool") and item.Name:find("Moonlit") then
-            return true
-        end
-    end
-    local character = player.Character
-    if character then
-        for _, item in ipairs(character:GetChildren()) do
-            if item:IsA("Tool") and item.Name:find("Moonlit") then
-                return true
-            end
-        end
-    end
-    return false
-end
-
-local autoMoonlitQuestEnabled = false
-MiscTab:Toggle({
-    Title = "Auto Moonlit Quest",
-    Default = false,
-    Callback = function(state)
-        autoMoonlitQuestEnabled = state
-        if state then
-            spawn(function()
-                while autoMoonlitQuestEnabled do
-                    if hasMoonlitItem() then
-                        local args = {"SubmitAllPlants"}
-                        game:GetService("ReplicatedStorage"):WaitForChild("GameEvents"):WaitForChild("NightQuestRemoteEvent"):FireServer(unpack(args))
-                        wait(5)
-                    else
-                        wait(2)
-                    end
-                end
-            end)
-        end
-    end
 })
 
 MiscTab:Slider({
@@ -498,6 +571,23 @@ MiscTab:Toggle({
     end
 })
 
+local noclipEnabled = true
+MiscTab:Toggle({
+    Title = text.noclipTitle,
+    Default = true,
+    Callback = function(state)
+        noclipEnabled = state
+        if state then
+            noclip()
+        else
+            clip()
+        end
+    end
+})
+
+-- Enable noclip by default
+noclip()
+
 local hiddenGearButtonEnabled = false
 GUITab:Toggle({
     Title = text.hiddenGearButtonTitle,
@@ -538,7 +628,7 @@ GUITab:Toggle({
         gearShopEnabled = state
         local gearShop = player.PlayerGui:FindFirstChild("Gear_Shop")
         if gearShop then
-            gearShop.Enabled = state
+ backlash gearShop.Enabled = state
         end
     end
 })
@@ -556,15 +646,16 @@ GUITab:Toggle({
     end
 })
 
-local nightQuestPrompt = workspace:WaitForChild("NightEvent"):WaitForChild("Prompt"):WaitForChild("Head"):WaitForChild("ProximityPrompt"):WaitForChild("NightQuestNPCDialogue")
 GUITab:Toggle({
     Title = text.easterShopTitle,
     Default = false,
     Callback = function(state)
-        if nightQuestPrompt then
-            nightQuestPrompt.Enabled = state
+        local head = workspace:WaitForChild("NightEvent"):WaitForChild("Prompt"):WaitForChild("Head")
+        local prompt = head:FindFirstChildWhichIsA("ProximityPrompt")
+        if prompt then
+            prompt.Enabled = state
         else
-            warn("NightQuestNPCDialogue prompt not found")
+            warn("ProximityPrompt not found in NightEvent.Prompt.Head")
         end
     end
 })
