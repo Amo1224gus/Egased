@@ -13,7 +13,7 @@ local isRussian = localeId == "ru-ru"
 
 local englishText = {
     windowTitle = "Egas X! [0.25Rewr]",
-    windowNote = "Enter the key to access the script.\n\nNo key? Join our Discord: https://discord.gg/cRbced9G",
+    windowNote = "Enter the key to access the script.\n\nNo key? Join our Discord be button!",
     homeTabTitle = "Home",
     autoFarmTabTitle = "Auto Farm",
     freeSeedsTabTitle = "Free Seeds",
