@@ -12,7 +12,7 @@ local localeId = player.LocaleId
 local isRussian = localeId == "ru-ru"
 
 local englishText = {
-    windowTitle = "Egas X! [0.23Rewr]",
+    windowTitle = "Egas X! [0.22Rewr]",
     windowNote = "Enter the key to access the script.\n\nNo key? Join our Discord: https://discord.gg/cRbced9G",
     homeTabTitle = "Home",
     autoFarmTabTitle = "Auto Farm",
@@ -107,7 +107,7 @@ local Window = WindUI:CreateWindow({
     SideBarWidth = 200,
     HasOutline = true,
     KeySystem = {
-        Key = { "iwannamakegoodandfastscriptshelpme" },
+        Key = { "idontknowhowtobefunnyanymore" },
         Note = text.windowNote,
         URL = "https://discord.gg/cRbced9G",
         SaveKey = true,
