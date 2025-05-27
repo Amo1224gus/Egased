@@ -1,8 +1,6 @@
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
-local UserInputService = game:GetService("UserInputService")
-local RunService = game:GetService("RunService")
 
 -- Таблица поддерживаемых игр
 local gameScripts = {
@@ -157,20 +155,20 @@ GameName.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 GameName.BackgroundTransparency = 1.000
 GameName.BorderColor3 = Color3.fromRGB(0, 0, 0)
 GameName.BorderSizePixel = 0
-GameName.Position = UDim2.new(0.5, 0, 0.6, 0)
-GameName.Size = UDim2.new(0.3, 0, 0.05, 0)
+GameName.Position = UDim2.new(0.547347248, 0, 0.57, 0)
+GameName.Size = UDim2.new(0.134138167, 0, 0.0302663445, 0)
 GameName.Visible = false
 GameName.Font = Enum.Font.Michroma
 GameName.RichText = true
 GameName.Text = "<b>Loading: " .. (gameScripts[tostring(game.PlaceId)] and getGameNameById(tostring(game.PlaceId)) or "Not supported game!") .. "</b>"
 GameName.TextColor3 = Color3.fromRGB(255, 255, 255)
-GameName.TextSize = 60.000
+GameName.TextSize = 49.000
 GameName.TextTransparency = 1.000
-GameName.TextXAlignment = Enum.TextXAlignment.Center
+GameName.TextXAlignment = Enum.TextXAlignment.Left
 
 local UIAspectRatioConstraint_5 = Instance.new("UIAspectRatioConstraint")
 UIAspectRatioConstraint_5.Parent = GameName
-UIAspectRatioConstraint_5.AspectRatio = 10.000
+UIAspectRatioConstraint_5.AspectRatio = 8.000
 
 -- Анимация загрузки
 local function runSplashAnimation()
@@ -259,9 +257,17 @@ end
 local currentGameId = tostring(game.PlaceId)
 local scriptInfo = gameScripts[currentGameId]
 
-if not scriptInfo then
-    runSplashAnimation()
-    return
-end
-
 runSplashAnimation()
+
+if scriptInfo then
+    local success, result = pcall(function()
+        return loadstring(game:HttpGet(scriptInfo.loadstringUrl))()
+    end)
+    if not success then
+        WindUI:Notify({
+            Title = "Script Load Error",
+            Content = "Failed to load script for " .. getGameNameById(currentGameId) .. ": " .. result,
+            Duration = 10,
+        })
+    end
+end
