@@ -50,8 +50,8 @@ local supportedGamesText = table.concat(supportedGames, ", ")
 -- Показ уведомления о поддерживаемых играх
 WindUI:Notify({
     Title = "Supported Games",
-    Content = "This hub supports: " .. supportedGamesText,
-    Duration = 10,
+    Content = "This script supports: " .. supportedGamesText,
+    Duration = 10
 })
 
 -- Настройка начальной анимации
@@ -147,29 +147,6 @@ local UIAspectRatioConstraint_4 = Instance.new("UIAspectRatioConstraint")
 UIAspectRatioConstraint_4.Parent = Two
 UIAspectRatioConstraint_4.AspectRatio = 8.000
 
-local GameName = Instance.new("TextLabel")
-GameName.Name = "GameName"
-GameName.Parent = IriXa
-GameName.AnchorPoint = Vector2.new(0.5, 0.5)
-GameName.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-GameName.BackgroundTransparency = 1.000
-GameName.BorderColor3 = Color3.fromRGB(0, 0, 0)
-GameName.BorderSizePixel = 0
-GameName.Position = UDim2.new(0.547347248, 0, 0.57, 0)
-GameName.Size = UDim2.new(0.134138167, 0, 0.0302663445, 0)
-GameName.Visible = false
-GameName.Font = Enum.Font.Michroma
-GameName.RichText = true
-GameName.Text = "<b>Loading: " .. (gameScripts[tostring(game.PlaceId)] and getGameNameById(tostring(game.PlaceId)) or "Not supported game!") .. "</b>"
-GameName.TextColor3 = Color3.fromRGB(255, 255, 255)
-GameName.TextSize = 49.000
-GameName.TextTransparency = 1.000
-GameName.TextXAlignment = Enum.TextXAlignment.Left
-
-local UIAspectRatioConstraint_5 = Instance.new("UIAspectRatioConstraint")
-UIAspectRatioConstraint_5.Parent = GameName
-UIAspectRatioConstraint_5.AspectRatio = 8.000
-
 -- Анимация загрузки
 local function runSplashAnimation()
     local Blur = Instance.new("BlurEffect")
@@ -189,7 +166,6 @@ local function runSplashAnimation()
     One.Visible = true
     Two.Visible = true
     Divider.Visible = true
-    GameName.Visible = true
     
     coroutine.wrap(function()
         for step=0, 15, 1 do
@@ -214,7 +190,6 @@ local function runSplashAnimation()
             One.TextTransparency = step
             Divider.TextTransparency = step
             Two.TextTransparency = step
-            GameName.TextTransparency = step
             wait()
         end
     end)()
@@ -242,7 +217,6 @@ local function runSplashAnimation()
             One.TextTransparency = step
             Divider.TextTransparency = step
             Two.TextTransparency = step
-            GameName.TextTransparency = step
             wait()
         end
     end)()
@@ -258,6 +232,13 @@ local currentGameId = tostring(game.PlaceId)
 local scriptInfo = gameScripts[currentGameId]
 
 runSplashAnimation()
+
+-- Показ уведомления о текущей игре
+WindUI:Notify({
+    Title = "Game Status",
+    Content = scriptInfo and "Loading: " .. getGameNameById(currentGameId) or "Not supported game!",
+    Duration = 10
+})
 
 if scriptInfo then
     local success, result = pcall(function()
