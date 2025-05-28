@@ -8,6 +8,12 @@ local gameScripts = {
         loadstringUrl = "https://raw.githubusercontent.com/Amo1224gus/Egased/refs/heads/main/Games/GrowAGarden",
         fallbackName = "Grow a Garden"
     },
+
+    ["7534035522"] = {
+        loadstringUrl = "https://raw.githubusercontent.com/Amo1224gus/Egased/refs/heads/main/Games/tw.lua",
+        fallbackName = "Tower World"
+    },
+
     ["18687417158"] = {
         loadstringUrl = "https://raw.githubusercontent.com/Amo1224gus/Egased/refs/heads/main/Games/forsakenk",
         fallbackName = "Forsaken"
@@ -15,10 +21,6 @@ local gameScripts = {
     ["16116270224"] = {
         loadstringUrl = "https://raw.githubusercontent.com/Amo1224gus/iriska/refs/heads/main/english.lua",
         fallbackName = "Dandy's World"
-    },
-    ["7534035522"] = {
-        loadstringUrl = "https://raw.githubusercontent.com/Amo1224gus/Egased/refs/heads/main/Games/tw.lua", -- Placeholder, to be updated
-        fallbackName = "Tower World"
     },
 }
 
