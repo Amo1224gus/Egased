@@ -12,12 +12,12 @@ local gameScripts = {
         loadstringUrl = "https://raw.githubusercontent.com/Amo1224gus/Egased/refs/heads/main/Games/forsakenk",
         fallbackName = "Forsaken"
     },
-    ["18984416148"] = {
+    ["16116270224"] = {
         loadstringUrl = "https://raw.githubusercontent.com/Amo1224gus/iriska/refs/heads/main/english.lua",
         fallbackName = "Dandy's World"
     },
-    ["7536025522"] = {
-        loadstringUrl = "https://example.com/towerworld.lua", -- Placeholder, to be updated
+    ["7534035522"] = {
+        loadstringUrl = "https://raw.githubusercontent.com/Amo1224gus/Egased/refs/heads/main/Games/tw.lua", -- Placeholder, to be updated
         fallbackName = "Tower World"
     },
 }
