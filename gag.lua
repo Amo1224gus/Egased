@@ -18,7 +18,7 @@ local gameScripts = {
         loadstringUrl = "https://raw.githubusercontent.com/Amo1224gus/Egased/refs/heads/main/Games/forsakenk",
         fallbackName = "Forsaken"
     },
-    ["16116270224"] = {
+    ["16552821455"] = {
         loadstringUrl = "https://raw.githubusercontent.com/Amo1224gus/iriska/refs/heads/main/english.lua",
         fallbackName = "Dandy's World"
     },
