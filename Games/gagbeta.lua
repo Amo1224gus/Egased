@@ -54,7 +54,8 @@ local englishText = {
     shopGUITitle = "Shop GUI",
     gearShopTitle = "Gear Shop",
     dailyQuestTitle = "Daily Quest",
-    easterShopTitle = "Easter Shop"
+    easterShopTitle = "Easter Shop",
+    openButtonTitle = "Open Egas UI"
 }
 
 local russianText = {
@@ -100,14 +101,15 @@ local russianText = {
     shopGUITitle = "Магазин семян",
     gearShopTitle = "Магазин снаряжения",
     dailyQuestTitle = "Ежедневные квесты",
-    easterShopTitle = "Пасхальный магазин"
+    easterShopTitle = "Пасхальный магазин",
+    openButtonTitle = "Открыть Egas UI"
 }
 
 local text = isRussian and russianText or englishText
 
 -- Add Pride theme
 WindUI:AddTheme({
-    Name = "Pride 🏳️‍🌈",
+    Name = "Pride",
     Accent = Color3.fromRGB(255, 255, 255),
     Outline = Color3.fromRGB(0, 0, 0),
     Text = Color3.fromRGB(0, 0, 0),
@@ -132,6 +134,19 @@ local Window = WindUI:CreateWindow({
         URL = "https://discord.gg/TzTeBkBSBB",
         SaveKey = false,
     },
+})
+
+-- Add custom open button for mobile
+Window:EditOpenButton({
+    Title = text.openButtonTitle,
+    Icon = "monitor",
+    CornerRadius = UDim.new(0, 16),
+    StrokeThickness = 2,
+    Color = ColorSequence.new(
+        Color3.fromHex("#FF0F7B"),
+        Color3.fromHex("#F89B29")
+    ),
+    Draggable = true,
 })
 
 local function findOurFarm()
