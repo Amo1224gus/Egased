@@ -1,4 +1,4 @@
--- Key System Bait Script with Discord Copy Button
+-- Key System Bait Script with Always-Visible Discord Copy Button
 
 local WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesus/WindUI/main/dist/main.lua"))()
 
@@ -13,21 +13,47 @@ local Window = WindUI:CreateWindow({
     Icon = "lock",
     Author = "Key Verification",
     Folder = "GaG_Vulnerability_Key",
-    Size = UDim2.fromOffset(400, 200),
+    Size = UDim2.fromOffset(450, 250),
     Theme = "Plant"
 })
 
 local Tabs = {
-    Main = Window:Section({ Title = "Key Check", Opened = true })
+    Main = Window:Section({ Title = "Key System", Opened = true })
 }
 
 local TabHandles = {
-    InputTab = Tabs.Main:Tab({ Title = "Key Input", Icon = "key" })
+    InfoTab = Tabs.Main:Tab({ Title = "Instructions", Icon = "info" })
 }
 
+-- Текст с инструкцией
+TabHandles.InfoTab:Paragraph({
+    Title = "How to get the key",
+    Desc = "You can get the access key in our Discord server.\nJoin and check the key channel.",
+    Image = "link",
+    ImageSize = 18,
+    Color = "White"
+})
+
+-- Кнопка для копирования Discord
+TabHandles.InfoTab:Button({
+    Title = "Copy Discord Link",
+    Icon = "copy",
+    Variant = "Primary",
+    Callback = function()
+        setclipboard(discordLink)
+        WindUI:Notify({
+            Title = "Copied!",
+            Content = "Discord link copied to clipboard",
+            Icon = "check",
+            Duration = 3
+        })
+    end
+})
+
+-- Поле для ввода ключа
 local enteredKey = ""
-TabHandles.InputTab:Input({
-    Title = "Please enter your key to continue",
+TabHandles.InfoTab:Input({
+    Title = "Enter your key",
     Value = "",
     Placeholder = "Enter key here",
     Callback = function(val)
@@ -35,34 +61,18 @@ TabHandles.InputTab:Input({
     end
 })
 
-TabHandles.InputTab:Button({
-    Title = "Submit",
+-- Кнопка проверки ключа
+TabHandles.InfoTab:Button({
+    Title = "Submit Key",
     Icon = "check",
     Variant = "Primary",
     Callback = function()
         if enteredKey == correctKey then
-            -- bait message
             WindUI:Notify({
                 Title = "Info",
                 Content = "This script is actually a bait to join our Discord.\nDon't worry, we release all vulns faster than anyone, so stay with us!",
                 Icon = "info",
-                Duration = 6
-            })
-
-            -- Discord copy button
-            TabHandles.InputTab:Button({
-                Title = "Copy Discord Link",
-                Icon = "copy",
-                Variant = "Primary",
-                Callback = function()
-                    setclipboard(discordLink)
-                    WindUI:Notify({
-                        Title = "Copied!",
-                        Content = "Discord link copied to clipboard",
-                        Icon = "check",
-                        Duration = 3
-                    })
-                end
+                Duration = 7
             })
         else
             WindUI:Notify({
